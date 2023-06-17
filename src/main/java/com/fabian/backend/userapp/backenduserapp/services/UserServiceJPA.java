@@ -3,7 +3,9 @@ package com.fabian.backend.userapp.backenduserapp.services;
 import java.util.List;
 import java.util.Optional;
 
+import com.fabian.backend.userapp.backenduserapp.models.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,8 @@ public class UserServiceJPA implements UserService {
 
     @Autowired
     private UserRepository repository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -31,12 +35,14 @@ public class UserServiceJPA implements UserService {
     @Override
     @Transactional
     public User saveUser(User user) {
+        String passwordBCRYPT= passwordEncoder.encode(user.getPassword());
+        user.setPassword(passwordBCRYPT);
         return repository.save(user);
     }
 
     @Override
     @Transactional
-    public Optional<User> updateUser(User user, Long id) {
+    public Optional<User> updateUser(UserRequest user, Long id) {
         Optional<User> op = findUserById(id); // Optional<User> op = repository.findById(id
         User userOptional = null;
         if (op.isPresent()) {

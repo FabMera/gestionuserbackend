@@ -8,6 +8,7 @@
 
 package com.fabian.backend.userapp.backenduserapp.controller;
 
+import com.fabian.backend.userapp.backenduserapp.models.UserRequest;
 import com.fabian.backend.userapp.backenduserapp.models.entities.User;
 import com.fabian.backend.userapp.backenduserapp.services.UserService;
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ import java.util.Optional;
 @RequestMapping("/users")
 @CrossOrigin(originPatterns = "*")
 public class UserController {
-    
+
     @Autowired
     private UserService service;
 
@@ -51,17 +52,16 @@ public class UserController {
     //Metodo para crear un usuario
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> create(@RequestBody @Valid User user ,BindingResult binding) {
+    public ResponseEntity<?> create(@RequestBody @Valid User user, BindingResult binding) {
         if (binding.hasErrors()) {
-            return validation(binding); 
+            return validation(binding);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(service.saveUser(user));
     }
 
-    //Metodo para actualizar un usuario
+    //Metodo para actualizar un usuario,utilizamos la clase UserRequest para no exponer el id del usuario en el body
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@RequestBody @Valid User user,BindingResult binding, @PathVariable Long id) {
-
+    public ResponseEntity<?> update(@RequestBody @Valid UserRequest user, BindingResult binding, @PathVariable Long id) {
 
         Optional<User> op = service.updateUser(user, id);
         if (op.isPresent()) {
@@ -70,6 +70,7 @@ public class UserController {
         return ResponseEntity.notFound().build();
 
     }
+
     //Metodo para eliminar un usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<?> remove(@PathVariable Long id) {
@@ -77,7 +78,7 @@ public class UserController {
         User userDb = op.orElseThrow();
         if (op.isPresent()) {
             service.removeUser(id);
-            System.out.println("Usuario eliminado con ID : " + id + " USERNAME: " + userDb.getUsername() );
+            System.out.println("Usuario eliminado con ID : " + id + " USERNAME: " + userDb.getUsername());
             return ResponseEntity.noContent().build(); //204 no devuelve nada solo elimina.
         }
         return ResponseEntity.notFound().build();
@@ -85,7 +86,7 @@ public class UserController {
 
     //Metodo para validar errores
     private ResponseEntity<?> validation(BindingResult binding) {
-        Map<String,String> errors = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
         binding.getFieldErrors().forEach(err -> {
             errors.put(err.getField(), "El campo " + err.getField() + " " + err.getDefaultMessage());
         });
